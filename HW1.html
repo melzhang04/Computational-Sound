@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+    <head>
+       <meta charset="utf-8"> 
+       <title>Lab1 - Build Keyboard</title>
+       <style>
+           body {
+               font-family: Arial, sans-serif;
+               display: flex;
+               flex-direction: column;
+               align-items: center;
+               padding: 20px;
+               background-color: #b9d9eb;
+           }
+
+           .controls {
+               margin-bottom: 20px;
+           }
+
+           .controls label {
+               margin-right: 10px;
+               font-weight: bold;
+           }
+
+           .controls select {
+               padding: 5px 10px;
+               font-size: 14px;
+           }
+
+           .keyboard {
+               display: flex;
+               gap: 3px;
+               margin-top: 60px;
+               padding: 30px;
+               background-color: white;
+               border-radius: 12px;
+               box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+           }
+
+           .key {
+               width: 75px;
+               height: 300px;
+               background-color: white;
+               border: 3px solid #333;
+               border-radius: 6px;
+               display: flex;
+               align-items: flex-end;
+               justify-content: center;
+               cursor: pointer;
+               user-select: none;
+               transition: all 0.1s;
+               font-size: 14px;
+               font-weight: bold;
+               padding-bottom: 12px;
+               box-sizing: border-box;
+           }
+
+           .key:hover {
+               background-color: #f0f0f0;
+               transform: translateY(-2px);
+           }
+
+           .key.active {
+               background-color: #b9d9eb;
+               color: white;
+               transform: translateY(2px);
+           }
+
+           .key.black {
+               width: 52px;
+               height: 200px;
+               background-color: #333;
+               color: white;
+               border-color: #000;
+               margin-left: -27px;
+               margin-right: -27px;
+               position: relative;
+               z-index: 10;
+           }
+
+           .key.black:hover {
+               background-color: #555;
+           }
+
+           .key.black.active {
+               background-color: #b9d9eb;
+           }
+
+           @keyframes float-up {
+               0% {
+                   transform: translateY(0) translateX(0) scale(1);
+                   opacity: 1;
+               }
+               100% {
+                   transform: translateY(-200px) translateX(50px) scale(0.5);
+                   opacity: 0;
+               }
+           }
+
+           .floating-note {
+               position: fixed;
+               font-size: 40px;
+               pointer-events: none;
+               animation: float-up 2s ease-out forwards;
+               z-index: 1000;
+           }
+
+       </style>
+    </head>
+    <body>
+       <h1>✨Keyboard 🎹✨</h1>
+       
+       <div class="controls">
+           <label for="waveform">Waveform:</label>
+           <select id="waveform">
+               <option value="sine">Sine</option>
+               <option value="sawtooth">Sawtooth</option>
+           </select>
+       </div>
+
+       <div class="keyboard" id="keyboard"></div>
+       <script src="HW1.js"></script>
+    </body>
+</html>
