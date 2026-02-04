@@ -88,7 +88,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
     release: 0.18
   };
 
-  const EPS = 0.0001;
+  const EPS = 0;
 
   function updatePolyphonyGains() {
     const keys = Object.keys(activeOscillators);
@@ -132,9 +132,9 @@ document.addEventListener("DOMContentLoaded", function(event) {
 
     voice.envGain.gain.cancelScheduledValues(now);
 
-    const currentVal = Math.max(EPS, voice.envGain.gain.value);
+    const currentVal = voice.envGain.gain.value;
     voice.envGain.gain.setValueAtTime(currentVal, now);
-    voice.envGain.gain.exponentialRampToValueAtTime(EPS, now + ADSR.release);
+    voice.envGain.gain.linearRampToValueAtTime(0, now + ADSR.release);
 
     voice.osc.stop(now + ADSR.release);
 
@@ -158,7 +158,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
     osc.type = waveformSelect.value;
 
     const envGain = audioCtx.createGain();
-    envGain.gain.setValueAtTime(EPS, audioCtx.currentTime);
+    envGain.gain.setValueAtTime(0, audioCtx.currentTime);
 
     const voiceGain = audioCtx.createGain();
     voiceGain.gain.setValueAtTime(1, audioCtx.currentTime);
@@ -170,9 +170,9 @@ document.addEventListener("DOMContentLoaded", function(event) {
     const sustainLevel = peak * ADSR.sustain;
 
     envGain.gain.cancelScheduledValues(now);
-    envGain.gain.setValueAtTime(EPS, now);
-    envGain.gain.exponentialRampToValueAtTime(peak, now + ADSR.attack);
-    envGain.gain.exponentialRampToValueAtTime(sustainLevel, now + ADSR.attack + ADSR.decay);
+    envGain.gain.setValueAtTime(0, now);
+    envGain.gain.linearRampToValueAtTime(peak, now + ADSR.attack);
+    envGain.gain.linearRampToValueAtTime(sustainLevel, now + ADSR.attack + ADSR.decay);
 
     activeOscillators[key] = { osc, envGain, voiceGain };
     updatePolyphonyGains();
