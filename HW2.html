@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html>
+    <head>
+       <meta charset="utf-8"> 
+       <title>Lab2 - Keyboard Synth</title>
+       <style>
+           body {
+               font-family: Arial, sans-serif;
+               display: flex;
+               flex-direction: column;
+               align-items: center;
+               padding: 20px;
+               background-color: #b9d9eb;
+           }
+
+           .controls {
+               margin-bottom: 20px;
+               background: white;
+               padding: 14px 16px;
+               border-radius: 12px;
+               box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+               width: min(980px, 95vw);
+           }
+
+           .controls label {
+               margin-right: 10px;
+               font-weight: bold;
+           }
+
+           .controls select {
+               padding: 5px 10px;
+               font-size: 14px;
+               margin-right: 12px;
+           }
+
+           .row {
+               display: flex;
+               flex-wrap: wrap;
+               align-items: center;
+               gap: 10px 16px;
+               margin-top: 10px;
+           }
+
+           .control {
+               display: flex;
+               align-items: center;
+               gap: 8px;
+               white-space: nowrap;
+           }
+
+           .control input[type="range"] {
+               width: 180px;
+           }
+
+           .val {
+               min-width: 44px;
+               text-align: right;
+               font-variant-numeric: tabular-nums;
+           }
+
+           .keyboard {
+               display: flex;
+               gap: 3px;
+               margin-top: 60px;
+               padding: 30px;
+               background-color: white;
+               border-radius: 12px;
+               box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+           }
+
+           .key {
+               width: 75px;
+               height: 300px;
+               background-color: white;
+               border: 3px solid #333;
+               border-radius: 6px;
+               display: flex;
+               align-items: flex-end;
+               justify-content: center;
+               cursor: pointer;
+               user-select: none;
+               transition: all 0.1s;
+               font-size: 14px;
+               font-weight: bold;
+               padding-bottom: 12px;
+               box-sizing: border-box;
+           }
+
+           .key:hover {
+               background-color: #f0f0f0;
+               transform: translateY(-2px);
+           }
+
+           .key.active {
+               background-color: #b9d9eb;
+               color: white;
+               transform: translateY(2px);
+           }
+
+           .key.black {
+               width: 52px;
+               height: 200px;
+               background-color: #333;
+               color: white;
+               border-color: #000;
+               margin-left: -27px;
+               margin-right: -27px;
+               position: relative;
+               z-index: 10;
+           }
+
+           .key.black:hover {
+               background-color: #555;
+           }
+
+           .key.black.active {
+               background-color: #b9d9eb;
+           }
+
+           @keyframes float-up {
+               0% {
+                   transform: translateY(0) translateX(0) scale(1);
+                   opacity: 1;
+               }
+               100% {
+                   transform: translateY(-200px) translateX(50px) scale(0.5);
+                   opacity: 0;
+               }
+           }
+
+           .floating-note {
+               position: fixed;
+               font-size: 40px;
+               pointer-events: none;
+               animation: float-up 2s ease-out forwards;
+               z-index: 1000;
+           }
+       </style>
+    </head>
+    <body>
+       <h1>✨Keyboard 🎹✨</h1>
+       
+       <div class="controls">
+           <div class="row">
+               <label for="waveform">Waveform:</label>
+               <select id="waveform">
+                   <option value="sine">Sine</option>
+                   <option value="sawtooth">Sawtooth</option>
+                   <option value="square">Square</option>
+                   <option value="triangle">Triangle</option>
+               </select>
+
+               <label for="synthMode">Synthesis:</label>
+               <select id="synthMode">
+                   <option value="additive">Additive</option>
+                   <option value="am">AM</option>
+                   <option value="fm">FM</option>
+               </select>
+           </div>
+
+           <div class="row">
+               <div class="control">
+                   <label for="addPartials">Additive partials</label>
+                   <input id="addPartials" type="range" min="1" max="6" step="1" value="3">
+                   <span class="val" id="addPartialsVal">3</span>
+               </div>
+
+               <div class="control">
+                   <label for="addDecay">Additive decay</label>
+                   <input id="addDecay" type="range" min="0.10" max="0.95" step="0.01" value="0.55">
+                   <span class="val" id="addDecayVal">0.55</span>
+               </div>
+
+               <div class="control">
+                   <label for="amModFreq">AM mod freq</label>
+                   <input id="amModFreq" type="range" min="20" max="300" step="1" value="100">
+                   <span class="val" id="amModFreqVal">100</span>
+               </div>
+
+               <div class="control">
+                   <label for="amDepth">AM depth</label>
+                   <input id="amDepth" type="range" min="0" max="1" step="0.01" value="0.50">
+                   <span class="val" id="amDepthVal">0.50</span>
+               </div>
+
+               <div class="control">
+                   <label for="fmModFreq">FM mod freq</label>
+                   <input id="fmModFreq" type="range" min="20" max="500" step="1" value="120">
+                   <span class="val" id="fmModFreqVal">120</span>
+               </div>
+
+               <div class="control">
+                   <label for="fmIndex">FM index</label>
+                   <input id="fmIndex" type="range" min="0" max="200" step="1" value="80">
+                   <span class="val" id="fmIndexVal">80</span>
+               </div>
+           </div>
+
+           <div class="row">
+               <div class="control">
+                   <label for="lfoRate">LFO rate</label>
+                   <input id="lfoRate" type="range" min="0" max="10" step="0.1" value="5.0">
+                   <span class="val" id="lfoRateVal">5.0</span>
+               </div>
+
+               <div class="control">
+                   <label for="lfoDepth">LFO depth</label>
+                   <input id="lfoDepth" type="range" min="0" max="0.5" step="0.01" value="0.25">
+                   <span class="val" id="lfoDepthVal">0.25</span>
+               </div>
+
+               <div class="control">
+                   <label for="attack">Attack</label>
+                   <input id="attack" type="range" min="0.001" max="0.20" step="0.005" value="0.01">
+                   <span class="val" id="attackVal">0.01</span>
+               </div>
+
+               <div class="control">
+                   <label for="decay">Decay</label>
+                   <input id="decay" type="range" min="0.001" max="0.30" step="0.005" value="0.08">
+                   <span class="val" id="decayVal">0.08</span>
+               </div>
+
+               <div class="control">
+                   <label for="sustain">Sustain</label>
+                   <input id="sustain" type="range" min="0" max="1" step="0.01" value="0.70">
+                   <span class="val" id="sustainVal">0.70</span>
+               </div>
+
+               <div class="control">
+                   <label for="release">Release</label>
+                   <input id="release" type="range" min="0.001" max="0.50" step="0.005" value="0.18">
+                   <span class="val" id="releaseVal">0.18</span>
+               </div>
+           </div>
+       </div>
+
+       <div class="keyboard" id="keyboard"></div>
+       <script src="HW2.js"></script>
+    </body>
+</html>
