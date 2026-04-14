@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HW3: Farnell Sounds - Thunder Synthesizer</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: Arial, sans-serif;
+      background: #ffffff;
+      color: #1a1a18;
+      min-height: 100vh;
+      padding: 2rem 1rem;
+    }
+
+    .container { max-width: 700px; margin: 0 auto; }
+
+    h1 { font-size: 20px; font-weight: 600; margin-bottom: 1.25rem; }
+
+    p.sub {
+      font-size: 14px; color: #6e6c66;
+      margin-bottom: 1rem; line-height: 1.5;
+    }
+
+    .viz-wrap {
+      background: #e6f2ff;
+      border: 1px solid rgba(0,82,163,0.08);
+      border-radius: 12px;
+      padding: 12px;
+      margin-bottom: 1.25rem;
+    }
+
+    canvas { display: block; width: 100%; height: 100px; }
+
+    .strike-row {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0,1fr));
+      gap: 10px;
+      margin-bottom: 6px;
+    }
+
+    .strike-btn {
+      padding: 14px 10px;
+      border: 1px solid rgba(0,82,163,0.15);
+      border-radius: 10px;
+      background: white;
+      color: #0052a3;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+      transition: 0.15s ease;
+    }
+    .strike-btn:hover  { background: #e6f2ff; }
+    .strike-btn:active { transform: scale(0.98); }
+    .strike-btn.firing {
+      background: rgba(0,82,163,0.12);
+      border-color: rgba(0,82,163,0.45);
+      color: #003d7a;
+    }
+
+    .manage-row {
+      margin-bottom: 1.25rem;
+    }
+
+    .play-current-btn {
+      width: 100%;
+      background: #e6f2ff;
+      border-color: rgba(0,82,163,0.30);
+      color: #0052a3;
+    }
+    .play-current-btn:hover { background: #d0e3ff; }
+
+    .section-head {
+      font-size: 11px; font-weight: 700; color: #9a978f;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      margin-bottom: 0.75rem; margin-top: 0.5rem;
+    }
+
+    .grid2 {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0,1fr));
+      gap: 10px;
+      margin-bottom: 1.25rem;
+    }
+
+    .ctrl {
+      background: #e6f2ff;
+      border: 1px solid rgba(0,82,163,0.08);
+      border-radius: 10px;
+      padding: 0.8rem 0.9rem;
+    }
+
+    .ctrl-top {
+      display: flex; justify-content: space-between;
+      gap: 10px; margin-bottom: 6px;
+    }
+
+    .ctrl-label { font-size: 12px; color: #7c7971; }
+    .ctrl-val   { font-size: 12px; font-weight: 700; }
+
+    input[type="range"] { width: 100%; cursor: pointer; accent-color: #0052a3; }
+
+    #preset-modal {
+      display: none;
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.45);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+    #preset-modal.open { display: flex; }
+
+    .modal-box {
+      background: #fff;
+      border-radius: 14px;
+      width: min(480px, calc(100vw - 2rem));
+      max-height: 80vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.18);
+    }
+
+    .modal-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1rem 1.25rem;
+      border-bottom: 1px solid rgba(0,0,0,0.08);
+    }
+
+    .modal-header h2 { font-size: 16px; font-weight: 600; }
+
+    .modal-close {
+      background: none; border: none; cursor: pointer;
+      font-size: 20px; color: #999; line-height: 1;
+      padding: 2px 6px; border-radius: 6px;
+    }
+    .modal-close:hover { background: #f1efe8; color: #333; }
+
+    .modal-body { flex: 1; overflow-y: auto; padding: 1rem 1.25rem; }
+
+    .save-row {
+      display: flex; gap: 8px; margin-bottom: 1rem;
+    }
+
+    .save-row input[type="text"] {
+      flex: 1; padding: 8px 10px;
+      border: 1px solid rgba(0,82,163,0.15);
+      border-radius: 8px; font-size: 13px;
+      background: #ffffff; color: #1a1a18;
+      outline: none;
+    }
+    .save-row input[type="text"]:focus { border-color: #0052a3; }
+
+    .save-row button {
+      padding: 8px 16px;
+      background: #0052a3; color: #fff;
+      border: none; border-radius: 8px;
+      font-size: 13px; font-weight: 600;
+      cursor: pointer; transition: 0.12s ease;
+    }
+    .save-row button:hover { background: #003d7a; }
+
+    .modal-divider {
+      font-size: 11px; font-weight: 700; color: #9a978f;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      margin-bottom: 0.75rem;
+    }
+
+    #preset-list { display: flex; flex-direction: column; gap: 6px; }
+
+    .preset-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 8px 10px;
+      background: #f9f9f8;
+      border: 1px solid rgba(0,0,0,0.08);
+      border-radius: 8px;
+    }
+
+    .preset-name { font-size: 13px; font-weight: 500; }
+
+    .preset-actions { display: flex; gap: 6px; }
+
+    .pm-btn {
+      padding: 4px 10px; font-size: 12px;
+      border: 1px solid rgba(0,82,163,0.13);
+      border-radius: 6px; background: #fff;
+      cursor: pointer; transition: 0.12s ease;
+    }
+    .pm-btn:hover  { background: #e6f2ff; }
+    .pm-btn.firing { background: rgba(0,82,163,0.12); }
+
+    .pm-play { color: #1a3a7a; border-color: rgba(50,100,200,0.20); }
+    .pm-play:hover { background: #eef5ff; }
+
+    .pm-del  { color: #a32d2d; border-color: rgba(163,45,45,0.20); }
+    .pm-del:hover { background: #fcebeb; }
+
+    .no-presets { font-size: 13px; color: #9a978f; text-align: center; padding: 1.5rem 0; }
+
+    @media (max-width: 700px) {
+      .strike-row, #custom-btn-wrap, .grid2 { grid-template-columns: 1fr; }
+    }
+
+    @media (prefers-color-scheme: dark) {
+      body { background: #0a1929; color: #e8f0ff; }
+      p.sub { color: #a0b4d4; }
+      .viz-wrap, .ctrl { background: #132447; border-color: rgba(100,150,255,0.15); }
+
+      .strike-btn { background: #132447; color: #80b3ff; border-color: rgba(100,150,255,0.25); }
+      .strike-btn:hover { background: #1a3454; }
+      .strike-btn.firing { background: rgba(0,82,163,0.25); border-color: rgba(100,150,255,0.5); color: #80b3ff; }
+
+      .ctrl-label { color: #8ba3c0; }
+      .section-head { color: #6b8cb5; }
+
+      .play-current-btn { background: #0d3366; border-color: rgba(100,150,255,0.35); color: #80b3ff; }
+      .play-current-btn:hover { background: #144d7a; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>HW3: Farnell Sounds - Thunder Synthesizer</h1>
+
+    <div class="viz-wrap">
+      <canvas id="viz" height="100"></canvas>
+    </div>
+
+    <div class="strike-row">
+      <button class="strike-btn" onclick="strike('close',   this)">Close</button>
+      <button class="strike-btn" onclick="strike('mid',     this)">Mid-range</button>
+      <button class="strike-btn" onclick="strike('far',     this)">Distant</button>
+      <button class="strike-btn" onclick="strike('rolling', this)">Rolling</button>
+    </div>
+
+    <div class="manage-row">
+      <button class="strike-btn play-current-btn" onclick="strike(null, this)">▶ Play current</button>
+      <a class="strike-btn play-current-btn" href="HW4-writeup.html" style="display:block; text-align:center; margin-top:10px; text-decoration:none;">Read Blog</a>
+    </div>
+
+    <div class="section-head">Strike character</div>
+    <div class="grid2">
+      <div class="ctrl">
+        <div class="ctrl-top">
+          <span class="ctrl-label">Strike intensity</span>
+          <span class="ctrl-val" id="v-intensity">0.80</span>
+        </div>
+        <input type="range" min="0.1" max="1" step="0.01" id="s-intensity" value="0.8"
+          oninput="syncValue('intensity','v-intensity','',2)">
+      </div>
+
+      <div class="ctrl">
+        <div class="ctrl-top">
+          <span class="ctrl-label">Number of strikes</span>
+          <span class="ctrl-val" id="v-numStrikes">8</span>
+        </div>
+        <input type="range" min="2" max="20" step="1" id="s-numStrikes" value="8"
+          oninput="syncValue('numStrikes','v-numStrikes','')">
+      </div>
+
+      <div class="ctrl">
+        <div class="ctrl-top">
+          <span class="ctrl-label">Rumble density</span>
+          <span class="ctrl-val" id="v-rumbleDensity">14 Hz</span>
+        </div>
+        <input type="range" min="6" max="24" step="1" id="s-rumbleDensity" value="14"
+          oninput="syncValue('rumbleDensity','v-rumbleDensity',' Hz')">
+      </div>
+
+      <div class="ctrl">
+        <div class="ctrl-top">
+          <span class="ctrl-label">Rumble duration</span>
+          <span class="ctrl-val" id="v-rumbleDur">6.0 s</span>
+        </div>
+        <input type="range" min="2" max="12" step="0.5" id="s-rumbleDur" value="6.0"
+          oninput="syncValue('rumbleDur','v-rumbleDur',' s',1)">
+      </div>
+    </div>
+
+    <div class="section-head">Environment</div>
+    <div class="grid2">
+      <div class="ctrl">
+        <div class="ctrl-top">
+          <span class="ctrl-label">Pan</span>
+          <span class="ctrl-val" id="v-pan">0.00</span>
+        </div>
+        <input type="range" min="-1" max="1" step="0.01" id="s-pan" value="0"
+          oninput="syncValue('pan','v-pan','',2)">
+      </div>
+
+      <div class="ctrl">
+        <div class="ctrl-top">
+          <span class="ctrl-label">Echo / reverb</span>
+          <span class="ctrl-val" id="v-reverb">0.55</span>
+        </div>
+        <input type="range" min="0" max="0.95" step="0.01" id="s-reverb" value="0.55"
+          oninput="syncValue('reverb','v-reverb','',2)">
+      </div>
+
+      <div class="ctrl">
+        <div class="ctrl-top">
+          <span class="ctrl-label">Deep bass level</span>
+          <span class="ctrl-val" id="v-deepLvl">0.50</span>
+        </div>
+        <input type="range" min="0" max="1" step="0.01" id="s-deepLvl" value="0.50"
+          oninput="syncValue('deepLvl','v-deepLvl','',2)">
+      </div>
+
+      <div class="ctrl">
+        <div class="ctrl-top">
+          <span class="ctrl-label">Volume</span>
+          <span class="ctrl-val" id="v-vol">0.70</span>
+        </div>
+        <input type="range" min="0" max="1" step="0.01" id="s-vol" value="0.70"
+          oninput="syncValue('vol','v-vol','',2)">
+      </div>
+    </div>
+  </div>
+
+  <script src="HW4.js"></script>
+</body>
+</html>
