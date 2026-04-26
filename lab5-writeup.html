@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>Lab 5 Writeup</title>
+
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --blue: #1e5fa8;
+      --blue-2: #3d7fd3;
+      --blue-3: #eef5ff;
+      --border: #c9dcf7;
+      --text: #102033;
+      --muted: #5d7190;
+    }
+
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      background: linear-gradient(135deg, #f8fbff, #edf4ff);
+      color: var(--text);
+      display: flex;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .container {
+      width: min(800px, 100%);
+      background: rgba(255, 255, 255, 0.9);
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      box-shadow: 0 18px 45px rgba(30, 95, 168, 0.12);
+      padding: 32px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    h1 {
+      font-size: 1.6rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--blue);
+    }
+
+    h2 {
+      font-size: 0.9rem;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--blue-2);
+      margin-top: 12px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 6px;
+    }
+
+    p {
+      font-size: 0.88rem;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    ul {
+      padding-left: 18px;
+      color: var(--muted);
+      font-size: 0.88rem;
+    }
+
+    li {
+      margin-bottom: 6px;
+    }
+
+    .back {
+      margin-top: 16px;
+      align-self: flex-start;
+      text-decoration: none;
+      border: 1px solid var(--blue);
+      color: var(--blue);
+      padding: 10px 16px;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      transition: 0.15s;
+    }
+
+    .back:hover {
+      background: var(--blue);
+      color: #fff;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+
+    <a href="lab5.html" class="back">← Back to Composer</a>
+
+    <h1>Generative Music with Cellular Automata</h1>
+
+    <p>
+    For this lab, I implemented a 2D cellular automata system and mapped its output to sound using the Web Audio API. The system generated a grid of cells that evolved over time, and each generation was interpreted as a sequence of notes.
+    </p>
+
+    <h2>Cellular Automata Implementation</h2>
+
+    <p>
+    The grid was 12 rows by 16 columns. Each row represented a pitch, and each column represented a time step. I implemented a generalized version of a cellular automaton where the user could control three parameters: the birth condition, and the minimum and maximum survival values.
+    </p>
+
+    <p>
+    For each cell, I counted its 8 neighbors with wrap-around at the edges. A dead cell became alive if it had exactly the birth number of neighbors. A live cell survived if its neighbor count was within the survival range. Otherwise, it became dead.
+    </p>
+
+    <h2>Mapping to Music</h2>
+
+    <p>
+    Each column was played as a group of notes. Active cells were mapped to frequencies using a selected scale and root note. The scale was defined as semitone offsets and converted to frequency using the standard formula.
+    </p>
+
+    <p>
+    To improve sound quality, I limited playback to at most two notes per column and filtered for notes that were spaced apart in pitch. This avoided dense and dissonant clusters.
+    </p>
+
+    <h2>Playback System</h2>
+
+    <p>
+    I used the Web Audio API to schedule playback. Each note used an oscillator, gain envelope, and low-pass filter. I applied a short attack and exponential decay to make notes smoother.
+    </p>
+
+    <p>
+    I also added a convolution reverb and a compressor. The reverb was generated procedurally, and both reverb and volume were adjustable through the interface.
+    </p>
+
+    <h2>Improvements to Sound</h2>
+
+    <ul>
+    <li>Reduced initial grid density</li>
+    <li>Limited polyphony to two notes</li>
+    <li>Shortened note duration</li>
+    <li>Lowered volume and reverb</li>
+    </ul>
+
+    <p>
+    These changes made the output more controlled and less chaotic.
+    </p>
+
+    <h2>Handling Repetition</h2>
+
+    <p>
+    Cellular automata often became repetitive. I tracked recent note patterns and detected when the system was repeating. When that happened, I modified a small section of the grid to reintroduce variation. When this doesn't work, I also included a randomize button to reintroduce variation as well.
+    </p>
+
+    <h2>Reflection</h2>
+
+    <p>
+    The automaton itself only generated structure. The musical result depended heavily on how that structure was mapped to sound. Limiting complexity and adding constraints had the biggest impact on making the output more musical.
+    </p>
+
+  </div>
+</body>
+</html>
